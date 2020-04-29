@@ -101,7 +101,7 @@ First, we need to modify `package.xml` and add the following:
 
 Then edit `CMakeLists.txt` and add `message_generation` to `find_package`, that is:
 
-```
+```.cmake
 find_package(catkin REQUIRED COMPONENTS
  roscpp
  std_msgs
@@ -111,7 +111,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 Additionally, add `message_runtime` to `catkin_package`
 
-```
+```.cmake
 catkin_package(
 ...
 CATKIN_DEPENDS message_runtime ...
@@ -120,7 +120,7 @@ CATKIN_DEPENDS message_runtime ...
 
 Thirdly, define the message:
 
-```
+```.cmake
 add_message_files(
 FILES
 SensorData.msg
@@ -130,7 +130,7 @@ DriverCommand.msg
 
 The last action is to uncomment the following:
 
-```
+```.cmake
 generate_messages(
 DEPENDENCIES
 std_msgs
@@ -161,7 +161,7 @@ We will create a node at `src/pilot.cpp`. But first we need to include this file
 into `CMakeLists.txt`. Edit `~/catkin_make/src/navigator/CMakeLists.txt` and
 add the following at the end of the file:
 
-```CMakeLists
+```.cmake
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(pilot src/pilot.cpp)
@@ -179,7 +179,7 @@ following content:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "talker");
+  ros::init(argc, argv, "pilot");
   ros::NodeHandle private_nh_("~");
   ros::Publisher chatter_pub = private_nh_.advertise<std_msgs::String>("commands", 1000);
 
