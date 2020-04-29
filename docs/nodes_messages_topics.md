@@ -351,9 +351,14 @@ int main(int argc, char **argv)
   ros::Subscriber sub
     = private_nh_.subscribe("sensors", 1000, receiveSensorDataCallback);
 
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(10);  /* run at 10Hz */
 
   while (ros::ok()) {
+    /**
+     * Attribute `vehicle_velocity` was declared in msg/SensorData.msg
+     * to be of type `float64[2]`. In C++, this is mapped to the type
+     * boost::array<double, 2ul>.
+     */
     boost::array<double, 2ul> v = sensorsMessage.vehicle_velocity;
     if (sensorsMessage.is_intersection) {
       driver_command.acceleration_set_point = 100.*(v[0]-50.);
