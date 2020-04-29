@@ -115,9 +115,8 @@ Additionally, add `message_runtime` to `catkin_package`
 
 ```.cmake
 catkin_package(
-...
-CATKIN_DEPENDS message_runtime ...
-...)
+   CATKIN_DEPENDS message_runtime
+)
 ```
 
 Thirdly, define the message:
@@ -296,4 +295,65 @@ rostopic echo /pilot/commands/gear
 ```
 
 
-### The Subscriber
+### Publisher + Subscriber: Implementation of a controller
+
+Code (WIP):
+
+```.cpp
+#include "ros/ros.h"
+#include "std_msgs/String.h"
+#include "navigator/SensorData.h"
+#include "navigator/DriverCommand.h"
+
+
+/**
+ * Static variable to store data obtained from
+ * topic: `pilot/sensors`
+ */
+static navigator::SensorData sensorsMessage;
+
+/**
+ * Callback function to obtain data from topic
+ * `pilot/sensors`. It takes one line of code to
+ * parse a SensorData-type message.
+ */
+void receiveSensorDataCallback(
+        const navigator::SensorData::ConstPtr& msg) {       
+        sensorsMessage = *msg;
+}
+
+int main(int argc, char **argv)
+{
+  navigator::DriverCommand driver_command;
+  driver_command.acceleration_set_point = 5.0;
+  driver_command.gear = 3;
+  driver_command.brakes = 0.5;
+  driver_command.indicator_lights[0] = 1;
+
+  ros::init(argc, argv, "pilot");
+  ros::NodeHandle private_nh_("~");
+  ros::Publisher commands_pub
+     = private_nh_.advertise<navigator::DriverCommand>("commands", 1000);
+
+  /**
+   * Create a subscriber to the topic `~/sensors` (i.e., pilot/sensors)
+   * and assign to it a callback function
+   */
+  ros::Subscriber sub
+    = private_nh_.subscribe("sensors", 1000, receiveSensorDataCallback);
+
+  ros::Rate loop_rate(10);
+
+  while (ros::ok()) {
+    double v = sensorsMessage.vehicle_velocity[0];
+    ROS_INFO("status = %d", sensorsMessage.status_code);
+    ROS_INFO("v = (%g, %g)", sensorsMessage.vehicle_velocity[0], sensorsMessage.vehicle_velocity[1]);
+    commands_pub.publish(driver_command);
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+
+
+  return 0;
+}
+```
