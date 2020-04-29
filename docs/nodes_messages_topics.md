@@ -1,6 +1,3 @@
-<script type="text/x-mathjax-config">MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});</script>
-<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
 # Nodes, Messages and Topics
 
 **Problem statement.** Suppose we need to make a package that offers autonomous
@@ -304,19 +301,19 @@ Let's do something more interesting... we'll subscribe to topic `pilot/sensors`,
 read the announced messages (of type `SensorData`) and we will compute an
 acceleration set point (`acceleration_set_point`) value according to
 
-<div class="math">
-\[\begin{split}\alpha = \begin{cases}30(v_1+v_2-10),&\text{ if at intersection}
-\\
-5(v_1-v_2-1),&\text{ otherwise}
-\end{cases}\end{split}\]</div>
+```
+acceleration_set_point
+  = [ 100*(vehicle_velocity[0] - 50), if at intersection,
+    [ -5*(vehicle_velocity[0] + vehicle_velocity[1]), otherwise
+```
 
+The above control law is absolutely arbitrary.
 
 ```.cpp
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "navigator/SensorData.h"
 #include "navigator/DriverCommand.h"
-
 
 /**
  * Static variable to store data obtained from
@@ -357,15 +354,16 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(10);
 
   while (ros::ok()) {
-    double v = sensorsMessage.vehicle_velocity[0];
-    ROS_INFO("status = %d", sensorsMessage.status_code);
-    ROS_INFO("v = (%g, %g)", sensorsMessage.vehicle_velocity[0], sensorsMessage.vehicle_velocity[1]);
+    boost::array<double, 2ul> v = sensorsMessage.vehicle_velocity;
+    if (sensorsMessage.is_intersection) {
+      driver_command.acceleration_set_point = 100.*(v[0]-50.);
+    } else {
+      driver_command.acceleration_set_point = -5.*(v[0]+v[1]);
+    }
     commands_pub.publish(driver_command);
     ros::spinOnce();
     loop_rate.sleep();
   }
-
-
   return 0;
 }
 ```
