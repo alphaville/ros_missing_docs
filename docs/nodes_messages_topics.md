@@ -10,7 +10,7 @@ compute certain control actions (e.g., steering angle, accelerator position, gea
 and publish its output at a topic called `commands`.
 
 
-### Create package
+## Create package
 
 The first step is to create a new package in our catkin workspace.
 
@@ -44,8 +44,9 @@ depends on `std_msgs` and `roscpp`. We can add more dependencies later.
 </package>
 ```
 
-### Define message templates (msg files)
+## Define message templates (msg files)
 
+### Create msg files
 We need to define the form of the messages associated with our node. The message
 templates are simple text files with the extension `.msg` that need to be in
 the directory `~/catkin_ws/src/navigator/msg`.
@@ -156,7 +157,9 @@ files:
 These will come in handy in the next section where we will make our node.
 
 
-### Create a node
+## Create a node
+
+### CMakeLists
 
 We will create a node at `src/pilot.cpp`. But first we need to include this file
 into `CMakeLists.txt`. Edit `~/catkin_make/src/navigator/CMakeLists.txt` and
@@ -170,40 +173,60 @@ target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${PROJECT_NAME}_generate_messages_cpp)
 ```
 
-Then, create the file `~/catkin_make/src/navigator/src/pilot.cpp` with the
-following content:
+### The Publisher
 
-```cpp
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "navigator/SensorData.h"
+We start by creating the file `~/catkin_make/src/navigator/src/pilot.cpp`.
+We will create a node that posts messages of type `DriverCommand` on the
+"private" topic `navigator/commands`. The term "private" does not mean that
+the topic is not accessible to other nodes. It rather means that it is a topic
+associated with the current package.
+
+```.cpp
+#include "ros/ros.h"                /* always include ros/ros.h */
+#include "navigator/SensorData.h"   /* include message classes  */
 #include "navigator/DriverCommand.h"
 
-int main(int argc, char **argv)
-{
-
+int main(int argc, char **argv) {
+  /**
+   * Create an instance of DriverCommand. Note that DriverCommand belongs to
+   * the namespace "navigator" (same name as the package).
+   */
   navigator::DriverCommand driver_command;
   driver_command.acceleration_set_point = 5.0;
   driver_command.gear = 3;
   driver_command.brakes = 0.5;
   driver_command.indicator_lights[0] = 1;
 
+  /**
+   * Initialise the ROS node. The third argument is the name of this node.
+   */
   ros::init(argc, argv, "pilot");
+  /**
+   * NodeHandle is the main access point to communications with the ROS system.
+   * Here we create a private node handle
+   */
   ros::NodeHandle private_nh_("~");
-  ros::Publisher commands_pub = private_nh_.advertise<navigator::DriverCommand>("commands", 1000);
+  /**
+   * Create a publisher for objects of type DriverCommand.
+   */
+  ros::Publisher commands_pub
+    = private_nh_.advertise<navigator::DriverCommand>("commands", 1000);
 
   ros::Rate loop_rate(10);
 
-  int count = 0;
-  while (ros::ok())
-  {   
+  while (ros::ok()) {  
+     /**
+      * This shows how easy it easy to publish an object to a topic
+      * We don't have to worry about serialization
+      */
     commands_pub.publish(driver_command);
     ros::spinOnce();
     loop_rate.sleep();
-    ++count;
   }
-
 
   return 0;
 }
 ```
+
+
+### The Subscriber
