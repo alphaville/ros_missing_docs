@@ -1,3 +1,6 @@
+<script type="text/x-mathjax-config">MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});</script>
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
 # Nodes, Messages and Topics
 
 **Problem statement.** Suppose we need to make a package that offers autonomous
@@ -297,7 +300,16 @@ rostopic echo /pilot/commands/gear
 
 ### Publisher + Subscriber: Implementation of a controller
 
-Code (WIP):
+Let's do something more interesting... we'll subscribe to topic `pilot/sensors`,
+read the announced messages (of type `SensorData`) and we will compute an
+acceleration set point (`acceleration_set_point`) value according to
+
+<div class="math">
+\[\begin{split}\alpha = \begin{cases}30(v_1+v_2-10),&\text{ if at intersection}
+\\
+5(v_1-v_2-1),&\text{ otherwise}
+\end{cases}\end{split}\]</div>
+
 
 ```.cpp
 #include "ros/ros.h"
