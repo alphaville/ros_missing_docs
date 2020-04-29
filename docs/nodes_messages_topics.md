@@ -70,10 +70,11 @@ Likewise, we define the message `DriverCommand` as follows
 
 ```
 # Contents of file ~/catkin_ws/src/navigator/msg/DriverCommand.msg
-float64    acceleration_set_point
-int8       gear
-float64    breaks
-bool[3]    indicator_lights    
+float64    acceleration_set_point   # acceleration set point (0 to 100)
+float64    steering_wheel_angle     # steering wheel angle in rad
+int8       gear                     # gear (0 to 5 and -1 for reverse)
+float64    brakes                   # brakes (0 to 100)
+bool[3]    indicator_lights         # 0: left, 1: right, 2: both
 ```
 
 The reason we defined the above messages is that ROS will generate a C++ interface
@@ -175,30 +176,33 @@ following content:
 ```cpp
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include <sstream>
+#include "navigator/SensorData.h"
+#include "navigator/DriverCommand.h"
 
 int main(int argc, char **argv)
 {
+
+  navigator::DriverCommand driver_command;
+  driver_command.acceleration_set_point = 5.0;
+  driver_command.gear = 3;
+  driver_command.brakes = 0.5;
+  driver_command.indicator_lights[0] = 1;
+
   ros::init(argc, argv, "pilot");
   ros::NodeHandle private_nh_("~");
-  ros::Publisher chatter_pub = private_nh_.advertise<std_msgs::String>("commands", 1000);
+  ros::Publisher commands_pub = private_nh_.advertise<navigator::DriverCommand>("commands", 1000);
 
   ros::Rate loop_rate(10);
 
   int count = 0;
   while (ros::ok())
-  {
-    std_msgs::String msg;
-    std::stringstream ss;
-    ss << "hello world " << count;
-    msg.data = ss.str();
-
-    ROS_INFO("%s", msg.data.c_str());
-    chatter_pub.publish(msg);
+  {   
+    commands_pub.publish(driver_command);
     ros::spinOnce();
     loop_rate.sleep();
     ++count;
   }
+
 
   return 0;
 }
