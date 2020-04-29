@@ -136,3 +136,70 @@ DEPENDENCIES
 std_msgs
 )
 ```
+
+### Compile
+
+Although the package is not ready year, let us compile what we have so far.
+Do:
+
+```sh
+cd ~/catkin_ws
+catkin_make
+```
+Have a look at `~/catkin_ws/devel/include/navigator`. You will find two header
+files:
+
+- `DriverCommand.h` and
+- `SensorData.h`
+
+These will come in handy in the next section where we will make our node.
+
+
+### Create a node
+
+We will create a node at `src/pilot.cpp`. But first we need to include this file
+into `CMakeLists.txt`. Edit `~/catkin_make/src/navigator/CMakeLists.txt` and
+add the following at the end of the file:
+
+```CMakeLists
+include_directories(include ${catkin_INCLUDE_DIRS})
+
+add_executable(pilot src/pilot.cpp)
+target_link_libraries(pilot ${catkin_LIBRARIES})
+add_dependencies(pilot ${PROJECT_NAME}_generate_messages_cpp)
+```
+
+Then, create the file `~/catkin_make/src/navigator/src/pilot.cpp` with the
+following content:
+
+```cpp
+#include "ros/ros.h"
+#include "std_msgs/String.h"
+#include <sstream>
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "talker");
+  ros::NodeHandle private_nh_("~");
+  ros::Publisher chatter_pub = private_nh_.advertise<std_msgs::String>("commands", 1000);
+
+  ros::Rate loop_rate(10);
+
+  int count = 0;
+  while (ros::ok())
+  {
+    std_msgs::String msg;
+    std::stringstream ss;
+    ss << "hello world " << count;
+    msg.data = ss.str();
+
+    ROS_INFO("%s", msg.data.c_str());
+    chatter_pub.publish(msg);
+    ros::spinOnce();
+    loop_rate.sleep();
+    ++count;
+  }
+
+  return 0;
+}
+```
