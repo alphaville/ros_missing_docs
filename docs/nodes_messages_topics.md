@@ -228,5 +228,72 @@ int main(int argc, char **argv) {
 }
 ```
 
+Let us now compile it and use it.
+
+Compile with:
+
+```sh
+cd ~/catkin_ws/
+catkin_make
+```
+
+To run the node we just compiled, we first need to run `roscore` and then use
+`rosrun`. You can do so as follows: first run
+
+```sh
+roscore
+```
+
+Then, in a different terminal, run
+
+```sh
+rosrun navigator pilot
+```
+
+In another terminal we can obtain a list of all active topics:
+
+```sh
+rostopic list
+```
+
+This should print:
+
+```txt
+/pilot/commands
+/rosout
+/rosout_agg
+```
+
+Indeed, `/pilot/commands` is listed as an active topic. We can connect to it and
+print all messages that are announced on it:
+
+```sh
+rostopic echo /pilot/commands
+```
+
+You should see the following messages getting printed at a rate of 10Hz:
+
+```
+---
+acceleration_set_point: 5.0
+steering_wheel_angle: 0.0
+gear: 3
+brakes: 0.5
+indicator_lights: [True, False, False]
+---
+acceleration_set_point: 5.0
+steering_wheel_angle: 0.0
+gear: 3
+brakes: 0.5
+indicator_lights: [True, False, False]
+```
+
+Hit Ctrl+C to exit. If you want to get just one of these values, say `gear`,
+you can do
+
+```sh
+rostopic echo /pilot/commands/gear
+```
+
 
 ### The Subscriber
