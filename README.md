@@ -6,8 +6,7 @@ Are you starting to learn ROS and you feel that the official documentation is a 
 
 1. [Learning Resources](docs/resources.md)
 2. [Installation](docs/installation.md)
-3. [Nodes, Messages and Topics](docs/nodes_messages_topics.md): A complete  
-   example
+3. [Nodes, Messages and Topics](docs/nodes_messages_topics.md): A complete example
 4. [Messages](docs/messages.md)
 
 See also: [Generate ROS packages for parametric optimization][OpEn]
