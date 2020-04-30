@@ -365,6 +365,17 @@ int main(int argc, char **argv)
     } else {
       driver_command.acceleration_set_point = -5.*(v[0]+v[1]);
     }
+
+    /**
+     * This is how we can access the field `gps_data`. Note that
+     * `gps_data` does not have a fixed lenght, so ROS maps it to
+     * an instance of `std::vector<dobule>`.
+     */
+    std::vector<double> data = sensorsMessage.gps_data;
+
+    /**
+     * Publish the result
+     */
     commands_pub.publish(driver_command);
     ros::spinOnce();
     loop_rate.sleep();
@@ -372,3 +383,33 @@ int main(int argc, char **argv)
   return 0;
 }
 ```
+
+**Note:** The above implementation is not particularly C++-y. You would probably
+like to organise your code a little better using classes - especially in more
+involved examples. We'll leave that to you. In this tutorial we focus only on
+how to read from and write to topics.
+
+To run the above example, we need to start `roscore` (same as before) and run the
+node with `rosrun navigator pilot`. If we list all topics with `rostopic list`
+we should see
+
+```
+/pilot/commands
+/pilot/sensors
+/rosout
+/rosout_agg
+```
+
+We can post a message to `pilot/sensors` as follows:
+
+```sh
+rostopic pub \
+/pilot/sensors navigator/SensorData \
+  "{'gps_data'         :[54.5973, 5.9301], \
+    'vehicle_velocity' :[5.00, 20.0], \
+    'is_intersection': 0, \
+    'status_code':3}" \
+-r 50
+```
+
+The last argument (`-r 50`) is the rate at which messages are posted (in Hz).
