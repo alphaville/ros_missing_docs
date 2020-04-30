@@ -9,8 +9,12 @@ Are you starting to learn ROS and you feel that the official documentation is a 
 3. [Nodes, Messages and Topics](docs/nodes_messages_topics.md): A complete  
    example
 4. [Messages](docs/messages.md)
+5. Parameters
+6. Services
+7. Actions
+8. Dynamic parameters
+
 
 See also: [Generate ROS packages for parametric optimization][OpEn]
 
 [OpEn]: http://doc.optimization-engine.xyz
-
